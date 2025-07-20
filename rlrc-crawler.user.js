@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RLRC Rwanda Laws PDF Recursive Crawler
 // @namespace    http://tampermonkey.net/
-// @version      2025-07-17.5
+// @version      2025-07-17.5.2
 // @description  Fully recursive downloader for RLRC Rwanda laws with modal + sound when complete ✅🔊📄🕷️
 // @author       Badzone
 // @match        https://www.rlrc.gov.rw/mandate/laws-of-rwanda?*
@@ -22,7 +22,12 @@
             .map(li => li.textContent.trim())
             .join(" / ");
 
-    const isPDFLink = (el) => el.querySelector("img[src*='pdf']");
+    const isPDFLink = (el) => {
+        const link = el.querySelectorAll("a")[1];
+        if (!link) return false;
+        const name = link.textContent.trim();
+        return el.querySelector("img[src*='pdf']") || name.includes("8.2.11");
+    };
 
     async function loadStack() {
         const raw = await GM_getValue(STACK_KEY);
@@ -42,7 +47,7 @@
 
         for (let i = 1; i < rows.length; i++) { // Skip ".."
             const row = rows[i];
-            const link = row.querySelector("a");
+            const link = row.querySelectorAll("a")[1];
             if (!link) continue;
 
             const name = link.textContent.trim();
